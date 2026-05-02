@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  name        String?
+  role        Role         @default(STUDENT)
+  createdAt   DateTime     @default(now())
+  enrollments Enrollment[]
+}
+
+model Course {
+  id                String       @id @default(uuid())
+  title             String
+  description       String
+  youtubePlaylistId String
+  thumbnailUrl      String?
+  isPublished       Boolean      @default(false)
+  createdAt         DateTime     @default(now())
+  enrollments       Enrollment[]
+}
+
+model Enrollment {
+  id           String           @id @default(uuid())
+  studentId    String
+  courseId     String
+  status       EnrollmentStatus @default(PENDING)
+  paymentProof String?
+  createdAt    DateTime         @default(now())
+  course       Course           @relation(fields: [courseId], references: [id])
+  student      User             @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, courseId])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum EnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
